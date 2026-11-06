@@ -1,7 +1,6 @@
 import argparse
 import sys
 from pathlib import Path
-from datetime import datetime, timezone
 import pyspark.sql.functions as F
 
 # Import the root path of the project to the sys.path to allow for relative imports
