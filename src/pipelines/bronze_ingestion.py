@@ -38,13 +38,14 @@ def ingest_raw_to_bronze(input_path: str, output_path: str):
         .save(output_path)
     )
 
-parser = argparse.ArgumentParser(description="Ingests raw data into the bronze layer in Delta format.")
-parser.add_argument("--input-path", default="data/raw", help="Path to the input data")
-parser.add_argument("--output-path", default="data/bronze", help="Path to the output data")
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Ingests raw data into the bronze layer in Delta format.")
+    parser.add_argument("--input-path", default="data/raw", help="Path to the input data")
+    parser.add_argument("--output-path", default="data/bronze", help="Path to the output data")
 
-args = parser.parse_args()
+    args = parser.parse_args()
 
-ingest_raw_to_bronze(
-    input_path=args.input_path,
-    output_path=args.output_path
-)
+    ingest_raw_to_bronze(
+        input_path=args.input_path,
+        output_path=args.output_path
+    )
