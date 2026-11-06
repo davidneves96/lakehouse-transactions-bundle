@@ -42,15 +42,31 @@ An end-to-end Lakehouse batch pipeline built with PySpark, Delta Lake, and Datab
 ```text
 lakehouse-transactions-bundle/
 ├── data/
-│   └── raw/                   # Ignored locally; generated synthetic JSON Lines
+│   ├── raw/                   # Ignored locally; generated synthetic JSON Lines
+│   └── bronze/                # Ignored locally; Delta Lake Bronze table files
 ├── scripts/
 │   └── generate_mock_data.py  # CLI script to generate transactional mock batches
-├── src/                       # Lakehouse pipeline modules (Bronze, Silver, Gold)
+├── src/
+│   ├── common/                # Shared utilities (Spark session & Delta setup)
+│   └── pipelines/             # Lakehouse pipeline modules (Bronze, Silver, Gold)
 ├── tests/                     # Unit and integration tests
 ├── .gitignore
 ├── README.md
 └── requirements.txt
 ```
+
+---
+
+## Prerequisites
+
+* **Java:** JDK 8, 11, or 17 installed and configured (`JAVA_HOME`).
+* **Windows Environment Note:**
+  If executing natively on Windows (without WSL or Docker), Apache Spark requires the native Hadoop runtime components:
+  1. Download `winutils.exe` and `hadoop.dll` for Hadoop 3.3.x (e.g., from `cdarlint/winutils`).
+  2. Save them into a dedicated directory such as `C:\hadoop\bin`.
+  3. Configure the environment variables:
+     - Set `HADOOP_HOME=C:\hadoop`.
+     - Append `C:\hadoop\bin` to your system `PATH`.
 
 ---
 
@@ -81,6 +97,18 @@ python .\scripts\generate_mock_data.py
 
 # Custom execution example
 python .\scripts\generate_mock_data.py --records 500 --output-dir data/raw
+```
+
+### 3. Ingest Data to Bronze Layer
+
+Run the Bronze pipeline to ingest raw JSON Lines and persist them as a Delta Lake table:
+
+```powershell
+# Default execution (reads from data/raw/ and writes to data/bronze/)
+python .\src\pipelines\bronze_ingestion.py
+
+# CLI options check
+python .\src\pipelines\bronze_ingestion.py --help
 ```
 
 ---
