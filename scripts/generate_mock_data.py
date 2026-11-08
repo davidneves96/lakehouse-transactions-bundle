@@ -27,9 +27,9 @@ def generate_record():
                 "customer_id": f"CUST_{random.randint(1,999)}",
                 "customer_name": fake.name(),
                 "amount": round(random.uniform(5.0, 50000.0),2),
-                "currency": random.choice(["USD","EUR","BRL", "CAD"]),
+                "currency": random.choice(["USD","EUR","BRL", "CAD", "usd", "eur", "brl", "cad"]),
                 "channel": random.choice(["CREDIT_CARD", "DEBIT_CARD", "WIRE_TRANSFER", "ACH"]),
-                "status": random.choices(["APPROVED", "DECLINED", "FRAUD_ALERT"], weights=[0.85,0.12,0.03])[0],
+                "status": random.choices(["APPROVED", "DECLINED", "FRAUD_ALERT", "approved", "declined", "Fraud_Alert"], weights=[0.425,0.06,0.015,0.425,0.06,0.015])[0],
                 "customer_job": fake.job(),
                 "created_at": (datetime.now(timezone.utc) - timedelta(minutes=random.randint(0,1440))).isoformat()
         }
