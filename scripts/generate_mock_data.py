@@ -42,12 +42,6 @@ for _ in range(args.records):
         dict_list.append(generate_record())
         
 
-#TEST
-# for item in dict_list:
-#     print(item)
-
-
-
 # 5.1 Checking dir existence
 os.makedirs(args.output_dir, exist_ok=True)
 
