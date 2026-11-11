@@ -31,7 +31,7 @@ def generate_record():
                 "channel": random.choice(["CREDIT_CARD", "DEBIT_CARD", "WIRE_TRANSFER", "ACH"]),
                 "status": random.choices(["APPROVED", "DECLINED", "FRAUD_ALERT", "approved", "declined", "Fraud_Alert"], weights=[0.425,0.06,0.015,0.425,0.06,0.015])[0],
                 "customer_job": fake.job(),
-                "created_at": (datetime.now(timezone.utc) - timedelta(minutes=random.randint(0,1440))).isoformat()
+                "created_at": (datetime.now(timezone.utc) - timedelta(days=random.randint(0, 1095), minutes=random.randint(0, 1440))).isoformat()
         }
 
 

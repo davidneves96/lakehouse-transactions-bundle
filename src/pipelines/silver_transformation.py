@@ -2,6 +2,7 @@ import argparse
 import sys
 from pathlib import Path
 import pyspark.sql.functions as F
+from delta.tables import DeltaTable
 
 
 # Import the root path of the project to the sys.path to allow for relative imports
@@ -48,15 +49,26 @@ def ingest_bronze_to_silver (input_path: str, output_path: str):
     )
 
     # Write to Delta format in the silver layer
-    print(f"Writing data to silver layer at: {output_path}")
-    (
-        silver_df
-        .write
-        .format("delta")
-        .mode("append") # Use append mode to add new data to the existing Delta table
-        .save(output_path) 
-    )
-    
+
+    if DeltaTable.isDeltaTable(spark, output_path):
+        print(f"Delta table already exists at {output_path}. Merging new data into existing Delta table.")
+        delta_table = DeltaTable.forPath(spark, output_path)
+
+        (
+            delta_table.alias("target")
+            .merge(
+                silver_df.alias("source"),
+                "target.transaction_id = source.transaction_id"
+            )
+            .whenMatchedUpdateAll()
+            .whenNotMatchedInsertAll()
+            .execute()
+        )
+    else:
+        print(f"No existing Delta table found at {output_path}. Creating a new Silver Delta table.")
+        (
+            silver_df.write.format("delta").mode("overwrite").save(output_path)
+        )
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Ingests bronze data into the silver layer in Delta format.")
