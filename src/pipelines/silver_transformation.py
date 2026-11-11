@@ -32,8 +32,8 @@ def ingest_bronze_to_silver (input_path: str, output_path: str):
         .withColumn("transaction_date",F.to_date(F.col("created_at"))) # Create a new column transaction_date from created_at, making it easier to query by date
         .withColumn("amount", F.col("amount").cast("decimal(18,2)")) # Converts the amount column to DecimalType with precision 18 and scale 2, ensuring accurate representation of monetary values
         .withColumns({
-                    "status" : F.upper(F.col("status")),
-                    "currency" : F.upper(F.col("currency"))
+                    "status" : F.upper(F.trim(F.col("status"))),
+                    "currency" : F.upper(F.trim(F.col("currency")))
                     }) # Standardizes the status and currency columns to uppercase for consistency
         .withColumn("customer_name", F.sha2(F.col("customer_name"), 256)) # Hashes the customer_name column using SHA-2 for privacy and security
         .withColumn("is_valid",                                                             # Adds a new column is_valid to indicate 
