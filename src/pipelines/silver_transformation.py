@@ -12,20 +12,10 @@ if str(root_path) not in sys.path:
 
 from src.common.spark_session import get_spark_session
 
-
-def ingest_bronze_to_silver (input_path: str, output_path: str):
-    """Ingests bronze data from the specified input path and writes it to the silver layer in Delta format."""
-    spark = get_spark_session("SilverIngestion")
-
-    # Read bronze data
-    print(f"Reading bronze data from: {input_path}")
-    read_df = spark.read.format("delta").load(input_path)
-
-    
-    print(f"Number of records read: {read_df.count()}")
-
+def transform_silver_data(silver_df: F.DataFrame) -> F.DataFrame:
+    """Transforms the silver layer DataFrame into a cleaned and enriched silver layer DataFrame."""
     # Transforming the data to silver layer
-    print(f"Transforming data to silver layer and writing to: {output_path}")
+    print(f"Transforming data to silver layer")
     silver_df = (
         read_df
         .dropDuplicates(["transaction_id"]) # Drop duplicates based on transaction_id
@@ -39,14 +29,25 @@ def ingest_bronze_to_silver (input_path: str, output_path: str):
         .withColumn("customer_name", F.sha2(F.col("customer_name"), 256)) # Hashes the customer_name column using SHA-2 for privacy and security
         .withColumn("is_valid",                                                             # Adds a new column is_valid to indicate 
                     F.when((F.col("amount") > 0) &                                            # Whether the transaction amount is positive
-                           (F.col("currency").isin(["USD", "EUR", "BRL", "CAD"])) &           # Whether the currency is one of the accepted values
-                           (F.col("status").isin(["APPROVED", "DECLINED", "FRAUD_ALERT"])) &  # Whether the status is one of the accepted values
-                           (F.col("transaction_id").isNotNull()) &                            # Whether the transaction_id is not null
-                           (F.col("_ingestion_timestamp").isNotNull())                        # Whether the _ingestion_timestamp is not null
-                           , True).otherwise(False)         
+                            (F.col("currency").isin(["USD", "EUR", "BRL", "CAD"])) &           # Whether the currency is one of the accepted values
+                            (F.col("status").isin(["APPROVED", "DECLINED", "FRAUD_ALERT"])) &  # Whether the status is one of the accepted values
+                            (F.col("transaction_id").isNotNull()) &                            # Whether the transaction_id is not null
+                            (F.col("_ingestion_timestamp").isNotNull())                        # Whether the _ingestion_timestamp is not null
+                            , True).otherwise(False)         
                         # Data Engineer commentary: Why not use .when separately for each condition? Using a single .when() with multiple conditions combined using the & operator is more efficient and concise. It allows us to evaluate all the conditions in one go, rather than creating multiple columns and then combining them later. This approach reduces the number of transformations and can improve performance, especially on large datasets.
                     )
     )
+
+def ingest_bronze_to_silver (input_path: str, output_path: str):
+    """Ingests bronze data from the specified input path and writes it to the silver layer in Delta format."""
+    spark = get_spark_session("SilverIngestion")
+
+    # Read bronze data
+    print(f"Reading bronze data from: {input_path}")
+    read_df = spark.read.format("delta").load(input_path)
+    print(f"Number of records read: {read_df.count()}")
+
+    silver_df = transform_silver_data(read_df)
 
     # Write to Delta format in the silver layer
 
@@ -77,8 +78,8 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-# Call the function to ingest bronze data into the silver layer
-ingest_bronze_to_silver(
-    input_path=args.input_path,
-    output_path=args.output_path
-)
+    # Call the function to ingest bronze data into the silver layer
+    ingest_bronze_to_silver(
+        input_path=args.input_path,
+        output_path=args.output_path
+    )
