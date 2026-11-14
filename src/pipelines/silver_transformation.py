@@ -12,12 +12,13 @@ if str(root_path) not in sys.path:
 
 from src.common.spark_session import get_spark_session
 
-def transform_silver_data(silver_df: F.DataFrame) -> F.DataFrame:
+def transform_silver_data(bronze_df: F.DataFrame) -> F.DataFrame:
     """Transforms the silver layer DataFrame into a cleaned and enriched silver layer DataFrame."""
     # Transforming the data to silver layer
     print(f"Transforming data to silver layer")
-    silver_df = (
-        read_df
+    return(
+        
+        bronze_df
         .dropDuplicates(["transaction_id"]) # Drop duplicates based on transaction_id
         .withColumn("created_at", F.to_timestamp(F.col("created_at"))) # Convert created_at to timestamp type
         .withColumn("transaction_date",F.to_date(F.col("created_at"))) # Create a new column transaction_date from created_at, making it easier to query by date
